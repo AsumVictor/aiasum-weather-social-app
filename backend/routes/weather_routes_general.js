@@ -5,3 +5,5 @@ const router = express.Router();
 router.get("/", ()=>{
     console.log('get weather condition with limited informations')
 })
+
+module.exports = router;
