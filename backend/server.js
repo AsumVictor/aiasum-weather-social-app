@@ -1,6 +1,7 @@
-const express = require("express");
 require('dotenv').config()
+const express = require("express");
 const app = express();
+const mongoose = require('mongoose')
 const PORT = process.env.PORT || 6000;
 const nonAuthWeatherRoutes = require('./routes/weather_routes_general')
 const authWeatherRoutes = require("./routes/auth_weather_routes")
@@ -15,6 +16,12 @@ app.use('/get-weather-api', nonAuthWeatherRoutes)
 app.use('/auth-weather', authWeatherRoutes)
 app.use("/feeds", feedsRoutes)
 
-app.listen(PORT,()=>{
-    console.log(`Connect to port ${PORT}`);
-});
+
+mongoose.connect(process.env.DATABASE_URL).then(res=>{
+    console.log("Connected to MongoDB")
+    app.listen(PORT,()=>{
+        console.log(`Connect to port ${PORT}`);
+    });
+}).catch(err=>{
+    console.log(err)
+})
