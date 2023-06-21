@@ -9,6 +9,7 @@ const nonAuthWeatherRoutes = require('./routes/weather_routes_general')
 const authWeatherRoutes = require("./routes/auth_weather_routes")
 const feedsRoutes = require('./routes/feeds_routes')
 
+app.use(express.json())
 app.use(cors(corsOptions))
 
 app.use((req, res, next)=>{

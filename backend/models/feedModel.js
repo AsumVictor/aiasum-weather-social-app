@@ -46,4 +46,4 @@ const FeedsSchema = new Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.Model("Feed", FeedsSchema);
+module.exports = mongoose.model("Feed", FeedsSchema);

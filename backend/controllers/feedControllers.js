@@ -1,0 +1,1 @@
+const FeedLists = require("../models/feedModel");

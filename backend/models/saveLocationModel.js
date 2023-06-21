@@ -4,19 +4,18 @@ const Schema = mongoose.Schema
 const SavedLocation = new Schema({
   user: {
     type: String,
-    required: true, 
   },
   latitude: {
     type: String,
-    required: true, 
   },
   longitude: {
     type: String,
-    required: true, 
   },
-  location: {
+  country: {
     type: String,
-    required: true, 
+  },
+  city: {
+    type: String,
   }
 }, {timestamps: true})
 
