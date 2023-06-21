@@ -1,8 +1,28 @@
 const SavedLocationLists = require("../models/saveLocationModel");
 
 // get weather current for authenticated users
-const getWeather = async (latitude, longitude) => {
+const transformAirPollutionData = (item) => {
+  let transformedData = item.map((info) => {
+    return {
+      time: new Date(info.dt * 1000),
+      air_quality_index: info.main.aqi || null,
+      component_concentration:
+        {
+          Carbon_monoxide: info.components.co || null,
+          Nitrogen_monoxide: info.components.no || null,
+          Nitrogen_dioxide: info.components.no2 || null,
+          Ozone_: info.components.o3 || null,
+          Sulphur_dioxide: info.components.so2 || null,
+          Fine_particles_matter: info.components.pm2_5 || null,
+          Coarse_particulate_matter: info.components.pm10 || null,
+          Ammonia_: info.components.nh3 || null,
+        } || null,
+    };
+  });
+  return transformedData
+};
 
+const getWeather = async (latitude, longitude) => {
   const CURRENT_WEATHER_URL = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${process.env.WEATHER_API_KEY}`;
 
   const WEATHER_FORCAST_URL = `http://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${process.env.WEATHER_API_KEY}`;
@@ -53,6 +73,9 @@ const getWeather = async (latitude, longitude) => {
         };
       });
 
+      const current_Air_Pollution_Data = transformAirPollutionData(data[2].list)
+      const forcast_Air_Pollution_Data = transformAirPollutionData(data[3].list)
+
       return {
         weatherConditionData: {
           weather: {
@@ -87,9 +110,9 @@ const getWeather = async (latitude, longitude) => {
           city: data[0].name || null,
         },
         weatherForcastData: weatherForcastData,
-        airPollutionData: data[2],
-        airPollutionForcastData: data[3],
-        isSuccess: true
+        airPollutionData: current_Air_Pollution_Data[0],
+        airPollutionForcastData: forcast_Air_Pollution_Data,
+        isSuccess: true,
       };
     })
     .catch((err) => {
@@ -97,24 +120,27 @@ const getWeather = async (latitude, longitude) => {
         message: "Failed to fetch weather conditions",
         isSuccess: false,
         error: err,
-      }});
-   
-  return weatherInformation
+      };
+    });
+
+  return weatherInformation;
 };
 
-const getWeatherCondition = async (req, res)=>{
-  const {lat, lon}  = req.query
-  if(!lat, !lon) {
-   return res.status(400).json({message: 'All fields are required', isSuccess: false})
+const getWeatherCondition = async (req, res) => {
+  const { lat, lon } = req.query;
+  if ((!lat, !lon)) {
+    return res
+      .status(400)
+      .json({ message: "All fields are required", isSuccess: false });
   }
- let weather = await getWeather(lat,lon)
+  let weather = await getWeather(lat, lon);
 
- if(weather.isSuccess){
- return res.status(200).json(weather)
-}else{
-  return res.status(400).json(weather)
-}
-}
+  if (weather.isSuccess) {
+    return res.status(200).json(weather);
+  } else {
+    return res.status(400).json(weather);
+  }
+};
 // saving lcation for weather
 const saveLocation = async (req, res) => {
   const { user, latitude, longitude, country, city } = req.body;
@@ -144,12 +170,13 @@ const saveLocation = async (req, res) => {
     if (removedLocation) {
       return res.status(200).json({
         message: `You have removed ${city}, ${country} from your saves`,
-        isSuccess: true
+        isSuccess: true,
       });
     } else {
-      return res
-        .status(400)
-        .json({ message: `Oops! sorry an error occured. Try again`, isSuccess: false });
+      return res.status(400).json({
+        message: `Oops! sorry an error occured. Try again`,
+        isSuccess: false,
+      });
     }
   }
   if (!saveLocation) {
@@ -163,41 +190,45 @@ const saveLocation = async (req, res) => {
     if (addLocation) {
       return res.status(200).json({
         message: `You have added ${city}, ${country} to your saves`,
-        isSuccess: true
+        isSuccess: true,
       });
     } else {
-      return res
-        .status(400)
-        .json({ message: `Oops! sorry an error occured. Try again`, isSuccess: false });
+      return res.status(400).json({
+        message: `Oops! sorry an error occured. Try again`,
+        isSuccess: false,
+      });
     }
   }
 };
 
-const getAllSavedLocationWeather = async (req, res) =>{
+const getAllSavedLocationWeather = async (req, res) => {
+  const savedWeathers = await SavedLocationLists.find();
 
-  const savedWeathers = await SavedLocationLists.find()
+  const allWeather = await Promise.all(
+    savedWeathers.map(async (savedWeather) => {
+      let weather = await getWeather(
+        savedWeather.latitude,
+        savedWeather.longitude
+      );
+      return {
+        ...weather,
+        weatherConditionData: {
+          ...weather.weatherConditionData,
+          country: savedWeather.country,
+          city: savedWeather.city,
+        },
+      };
+    })
+  );
 
-  const allWeather = await Promise.all(savedWeathers.map(async(savedWeather)=>{
-   let weather = await getWeather(savedWeather.latitude,savedWeather.longitude)
-   return {
-    ...weather,
-    weatherConditionData: {
-      ...weather.weatherConditionData,
-      country: savedWeather.country,
-      city: savedWeather.city
+  allWeather.forEach((weather) => {
+    if (!weather.isSuccess) {
+      return res.status(400).json(allWeather);
     }
-  }
-  }))
+  });
 
-  allWeather.forEach(weather=>{
-    if(weather.isSuccess){
-      return res.status(200).json(allWeather)
-    }
-  })
-  
-  return res.json(allWeather)
-
-}
+  return res.status(200).json(allWeather);
+};
 
 // get air polution historical data
 const airPollutionHistory = async (req, res) => {
@@ -227,4 +258,8 @@ const airPollutionHistory = async (req, res) => {
   }
 };
 
-module.exports = { getWeatherCondition, saveLocation, getAllSavedLocationWeather };
+module.exports = {
+  getWeatherCondition,
+  saveLocation,
+  getAllSavedLocationWeather,
+};
