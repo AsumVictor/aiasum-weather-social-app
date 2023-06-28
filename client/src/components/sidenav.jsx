@@ -9,12 +9,12 @@ function Sidenav() {
         <div className="w-[2.5cm] h-[2.5cm] md:flex hidden  mt-1 mb-1">
           <img src={React} alt="logo" className={`h-full w-full`} />
         </div>
-        <div className="w-full h-[3px] md:flex hidden bg-white"></div>
-        <SideLinks icon={<HiHome />} text={'Home'} to={'home'} />
+        <div className="w-full h-[3px] md:flex hidden bg-white mb-5"></div>
+        <SideLinks icon={<HiHome />} text={'Home'} to={'.'} />
         <SideLinks icon={<HiCollection />} text={'Feeds'} to={'feeds'}  />
         <SideLinks icon={<HiSearch />} text={'Search'} to={'search'}  />
-        <SideLinks icon={<HiBookmark />} text={'Saves'} to={'saves'}  />
-        <SideLinks icon={<HiOutlineShoppingCart />} text={'Outfits'} to={'outfit'}  />
+        <SideLinks icon={<HiBookmark />} text={'Saves'} to={'saved'}  />
+        <SideLinks icon={<HiOutlineShoppingCart />} text={'Outfits'} to={'outfits'}  />
       </div>
     </div>
   );

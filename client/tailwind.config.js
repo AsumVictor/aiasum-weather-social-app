@@ -10,6 +10,7 @@ export default {
         "dark-primary": "#101014",
         "dark-overlay": "#1B1A1D",
          "dark-text-primary":"#e9e9e9",
+         "dark-text-primary-dim":"#b8b8b8",
          "dark-text-active":"#0196FF",
       }
     },

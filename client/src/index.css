@@ -8,7 +8,7 @@
 }
 
 :root {
-  --sidebarWidth: 4.5cm;
+  --sidebarWidth: 5cm;
 }
 
 body {
@@ -62,7 +62,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 13px 0 13px 0;
+    padding: 15px 0 15px 0;
   }
 
   .main {
